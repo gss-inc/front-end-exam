@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
-import axios from "axios";
-import "./styles.css";
+import { useCallback, useEffect, useState } from 'react';
+import axios from 'axios';
+
+import { deleteTodo, fetcher, postTodo, updateTodo } from './axiosHelpers';
 
 /**
  * Schema type for todos
@@ -15,15 +16,15 @@ export default function App() {
   const [todos, setTodos] = useState([]);
   const [loader, setLoader] = useState(false);
   const [newTodo, setNewTodo] = useState({
-    task: "",
-    done: false
+    task: '',
+    done: false,
   });
   const [openInput, setOpenInput] = useState(false);
   const [todoToEdit, setTodoToEdit] = useState(null);
 
   const refetcher = useCallback(async () => {
     axios(
-      "https://gss-lab-test-default-rtdb.asia-southeast1.firebasedatabase.app/todos.json"
+      'https://gss-lab-test-default-rtdb.asia-southeast1.firebasedatabase.app/todos.json'
     ).then((res) => {
       if (!res.data) return;
 
@@ -44,11 +45,9 @@ export default function App() {
     try {
       setLoader(true);
 
-      await axios.delete(
-        `https://gss-lab-test-default-rtdb.asia-southeast1.firebasedatabase.app/todos/${id}.json`
-      );
+      await deleteTodo(id);
 
-      refetcher();
+      await refetcher();
     } catch (err) {
       console.log(err);
     }
@@ -60,34 +59,42 @@ export default function App() {
     setTodoToEdit(selectedTodo);
   };
 
-  const updateHandler = async (id, value) => {
+  const checkHandler = async (id, value) => {
     try {
-      await axios.put(
-        `https://gss-lab-test-default-rtdb.asia-southeast1.firebasedatabase.app/todos/${id}.json`,
-        value
-      );
-      await refetcher();
+      await updateTodo(id, value);
 
-      // setTodoToEdit(null);
+      await refetcher();
     } catch (err) {
       console.log(err);
     }
   };
 
-  const submitHandler = async (e, id) => {
+  const updateHandler = async (id, value, e) => {
+    try {
+      e.preventDefault();
+      setLoader(true);
+      await updateTodo(id, value);
+      await refetcher();
+
+      //  Reset Field
+      setOpenInput(false);
+      setTodoToEdit(null);
+      setNewTodo((prev) => ({ ...prev, task: '' }));
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const submitHandler = async (e) => {
     try {
       e.preventDefault();
 
       setLoader(true);
 
-      await axios.post(
-        "https://gss-lab-test-default-rtdb.asia-southeast1.firebasedatabase.app/todos.json",
-        newTodo
-      );
+      await postTodo(newTodo);
 
       await refetcher();
-
-      setNewTodo((prev) => ({ ...prev, task: "" }));
+      setNewTodo((prev) => ({ ...prev, task: '' }));
     } catch (err) {
       console.log(err);
     }
@@ -96,8 +103,8 @@ export default function App() {
   // Getter Fetcher
   useEffect(() => {
     setLoader(true);
-    axios(
-      "https://gss-lab-test-default-rtdb.asia-southeast1.firebasedatabase.app/todos.json"
+    fetcher(
+      'https://gss-lab-test-default-rtdb.asia-southeast1.firebasedatabase.app/todos.json'
     ).then((res) => {
       if (!res.data) return;
 
@@ -117,59 +124,58 @@ export default function App() {
   return (
     <div
       style={{
-        width: "100vw",
-        maxWidth: "100%",
-        height: "100%"
+        width: '100vw',
+        maxWidth: '100%',
+        height: '100%',
       }}
     >
       <section
         style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          flexDirection: "column",
-          height: "400px",
-          width: "100%"
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          flexDirection: 'column',
+          height: '400px',
+          width: '100%',
         }}
       >
         <h1 style={{ marginBottom: 30 }}>Todos</h1>
-        <ul style={{ width: 500 }}>
+        <ul style={{ width: 500, height: 500, overflowY: 'auto' }}>
           {loader ? (
-            <p style={{ textAlign: "center" }}>Loading...</p>
+            <p style={{ textAlign: 'center' }}>Loading...</p>
           ) : (
             todos.map((todo) => (
               <li
                 style={{
-                  display: "flex",
-                  width: "100%",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  listStyle: "none",
-                  marginBottom: 20
+                  display: 'flex',
+                  width: '100%',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  listStyle: 'none',
+                  marginBottom: 20,
                 }}
                 key={todo.id}
               >
                 <span
                   style={{
-                    textDecoration: todo.check ? "line-through" : "none"
+                    textDecoration: todo.check ? 'line-through' : 'none',
                   }}
                 >
                   {todo.task}
                 </span>
                 <div
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: 10
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 10,
                   }}
                 >
                   <button
-                    style={{ width: 50 }}
                     onClick={() => {
                       const upTodo = { ...todo, check: !todo.check };
 
-                      return updateHandler(todo.id, upTodo);
+                      return checkHandler(todo.id, upTodo);
                     }}
                     type="button"
                     id="check"
@@ -177,10 +183,9 @@ export default function App() {
                     Done
                   </button>
                   <button
-                    style={{ width: 50 }}
                     onClick={() => {
                       editHandler(todo.id);
-                      setNewTodo((prev) => ({ ...prev, task: "" }));
+                      setNewTodo((prev) => ({ ...prev, task: '' }));
                       setOpenInput((prevState) => !prevState);
                     }}
                     type="button"
@@ -189,11 +194,7 @@ export default function App() {
                   >
                     Edit
                   </button>
-                  <button
-                    style={{ width: 50 }}
-                    onClick={() => deleteHandler(todo.id)}
-                    type="button"
-                  >
+                  <button onClick={() => deleteHandler(todo.id)} type="button">
                     Delete
                   </button>
                 </div>
@@ -203,26 +204,26 @@ export default function App() {
         </ul>
         <form
           style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 30
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 30,
           }}
         >
-          <label htmlFor={openInput ? "edit-todo" : "new-todo"}>
-            {openInput ? "Editing Todo" : "New Todo"}
+          <label htmlFor={openInput ? 'edit-todo' : 'new-todo'}>
+            {openInput ? 'Editing Todo' : 'New Todo'}
           </label>
           <input
             type="text"
-            id={openInput ? "edit-todo" : "new-todo"}
+            id={openInput ? 'edit-todo' : 'new-todo'}
             value={newTodo.task}
-            placeholder={openInput ? todoToEdit.task : ""}
+            placeholder={openInput ? todoToEdit.task : ''}
             onChange={(e) => {
               const handler = openInput
                 ? setNewTodo({ ...todoToEdit, task: e.target.value })
                 : setNewTodo((prevState) => ({
                     ...prevState,
-                    task: e.target.value
+                    task: e.target.value,
                   }));
               return handler;
             }}
@@ -230,11 +231,10 @@ export default function App() {
           {openInput && (
             <button
               onClick={() => {
-                setNewTodo((prev) => ({ ...prev, task: "" }));
+                setNewTodo((prev) => ({ ...prev, task: '' }));
                 setOpenInput(false);
               }}
               type="submit"
-              style={{ width: 50 }}
             >
               Cancel
             </button>
@@ -242,11 +242,10 @@ export default function App() {
           <button
             onClick={(e) => {
               openInput
-                ? updateHandler(todoToEdit.id, newTodo)
+                ? updateHandler(todoToEdit.id, newTodo, e)
                 : submitHandler(e);
             }}
             type="submit"
-            style={{ width: 50 }}
             disabled={!newTodo.task}
           >
             Submit
