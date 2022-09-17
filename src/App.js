@@ -41,64 +41,15 @@ export default function App() {
     });
   }, []);
 
-  const deleteHandler = async (id) => {
-    try {
-      setLoader(true);
+  const deleteHandler = async (id) => {};
 
-      await deleteTodo(id);
+  const editHandler = (id) => {};
 
-      await refetcher();
-    } catch (err) {
-      console.log(err);
-    }
-  };
+  const checkHandler = async (id, value) => {};
 
-  const editHandler = (id) => {
-    const selectedTodo = todos.find((todo) => todo.id === id);
+  const updateHandler = async (id, value, e) => {};
 
-    setTodoToEdit(selectedTodo);
-  };
-
-  const checkHandler = async (id, value) => {
-    try {
-      await updateTodo(id, value);
-
-      await refetcher();
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  const updateHandler = async (id, value, e) => {
-    try {
-      e.preventDefault();
-      setLoader(true);
-      await updateTodo(id, value);
-      await refetcher();
-
-      //  Reset Field
-      setOpenInput(false);
-      setTodoToEdit(null);
-      setNewTodo((prev) => ({ ...prev, task: '' }));
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  const submitHandler = async (e) => {
-    try {
-      e.preventDefault();
-
-      setLoader(true);
-
-      await postTodo(newTodo);
-
-      await refetcher();
-      setNewTodo((prev) => ({ ...prev, task: '' }));
-    } catch (err) {
-      console.log(err);
-    }
-  };
+  const submitHandler = async (e) => {};
 
   // Getter Fetcher
   useEffect(() => {
@@ -116,7 +67,6 @@ export default function App() {
         todos.push(newObj);
       });
 
-      setTodos(todos);
       setLoader(false);
     });
   }, []);
