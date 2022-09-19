@@ -1,17 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
 
-import { deleteTodo, fetcher, postTodo, updateTodo } from './axiosHelpers';
+import { fetcher } from './axiosHelpers';
 
-/**
- * Schema type for todos
- *
- * {
- * task: string;
- * check: boolean;
- * }
- *
- */
 export default function App() {
   const [todos, setTodos] = useState([]);
   const [loader, setLoader] = useState(false);
@@ -35,9 +26,6 @@ export default function App() {
 
         todos.push(newObj);
       });
-
-      setTodos(todos);
-      setLoader(false);
     });
   }, []);
 
@@ -51,25 +39,7 @@ export default function App() {
 
   const submitHandler = async (e) => {};
 
-  // Getter Fetcher
-  useEffect(() => {
-    setLoader(true);
-    fetcher(
-      'https://gss-lab-test-default-rtdb.asia-southeast1.firebasedatabase.app/todos.json'
-    ).then((res) => {
-      if (!res.data) return;
-
-      const todos = [];
-
-      Object.entries(res.data).forEach((resTodos) => {
-        const newObj = { ...resTodos[1], id: resTodos[0] };
-
-        todos.push(newObj);
-      });
-
-      setLoader(false);
-    });
-  }, []);
+  // NOTES Put Fetcher Function here
 
   return (
     <div
@@ -133,18 +103,14 @@ export default function App() {
                     Done
                   </button>
                   <button
-                    onClick={() => {
-                      editHandler(todo.id);
-                      setNewTodo((prev) => ({ ...prev, task: '' }));
-                      setOpenInput((prevState) => !prevState);
-                    }}
+                    onClick={() => {}}
                     type="button"
                     id="edit"
                     disabled={openInput}
                   >
                     Edit
                   </button>
-                  <button onClick={() => deleteHandler(todo.id)} type="button">
+                  <button onClick={() => {}} type="button">
                     Delete
                   </button>
                 </div>
@@ -168,36 +134,14 @@ export default function App() {
             id={openInput ? 'edit-todo' : 'new-todo'}
             value={newTodo.task}
             placeholder={openInput ? todoToEdit.task : ''}
-            onChange={(e) => {
-              const handler = openInput
-                ? setNewTodo({ ...todoToEdit, task: e.target.value })
-                : setNewTodo((prevState) => ({
-                    ...prevState,
-                    task: e.target.value,
-                  }));
-              return handler;
-            }}
+            onChange={(e) => {}}
           />
           {openInput && (
-            <button
-              onClick={() => {
-                setNewTodo((prev) => ({ ...prev, task: '' }));
-                setOpenInput(false);
-              }}
-              type="submit"
-            >
+            <button onClick={() => {}} type="submit">
               Cancel
             </button>
           )}
-          <button
-            onClick={(e) => {
-              openInput
-                ? updateHandler(todoToEdit.id, newTodo, e)
-                : submitHandler(e);
-            }}
-            type="submit"
-            disabled={!newTodo.task}
-          >
+          <button onClick={(e) => {}} type="submit" disabled={!newTodo.task}>
             Submit
           </button>
         </form>
